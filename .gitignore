@@ -8,3 +8,5 @@ assets/muhurtham.jpg
 # local tooling
 .vercel/
 node_modules/
+
+.vercel

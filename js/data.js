@@ -64,5 +64,23 @@ window.WEDDING = {
     name: 'Y.A.R. Convention',
     address: 'R.C.I. Road, Balapur, Hyderabad',
     mapQuery: 'Y.A.R. Convention, RCI Road, Balapur, Hyderabad'
+  },
+
+  // the message sent by the Share buttons at the end of the page
+  share: {
+    url: 'https://reena-deekshith-wedding.vercel.app/',
+    title: 'Reena & Deekshith — Wedding Invitation',
+    message: `With immense happiness and love, we invite you to be a part of our special day! ❤️
+
+As we begin this beautiful new chapter of our lives, your presence and blessings would mean the world to us.
+
+We have created a little invitation with all the wedding details. Please take a moment to visit the link below.
+
+💍 https://reena-deekshith-wedding.vercel.app/
+
+We genuinely wish to celebrate this precious moment with you. Please join us and make our special day even more memorable with your love and blessings.
+
+With love,
+Deekshith & Reena ❤️`
   }
 };

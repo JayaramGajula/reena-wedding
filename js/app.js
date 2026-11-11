@@ -484,6 +484,37 @@
   lb.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
   lb.addEventListener('touchend', e => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) showItem(gi + (dx < 0 ? 1 : -1)); sx = null; });
 
+  /* ── share the invitation ──────────────────────────────────────────────────
+     "Share invitation" opens the phone's own share sheet (WhatsApp, Instagram, SMS…)
+     with the message and link; the link then shows the poster preview.
+     Where that isn't available (most desktops) it falls back to WhatsApp. */
+  (function share() {
+    const S = W.share; if (!S || !$('#share')) return;
+    const note = $('#shareNote');
+    const waUrl = 'https://wa.me/?text=' + encodeURIComponent(S.message);
+    $('#shareWa').href = waUrl;
+    let noteT = 0;
+    const say = t => { note.textContent = t; clearTimeout(noteT); noteT = setTimeout(() => { note.textContent = ''; }, 3500); };
+    async function copy() {
+      try { await navigator.clipboard.writeText(S.message); say('Message copied — paste it anywhere to share ❤️'); }
+      catch (e) {
+        const ta = document.createElement('textarea'); ta.value = S.message; ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); say('Message copied — paste it anywhere to share ❤️'); } catch (e2) { say('Could not copy — please use WhatsApp instead'); }
+        ta.remove();
+      }
+    }
+    $('#shareNow').addEventListener('click', async () => {
+      if (navigator.share) {
+        try { await navigator.share({ title: S.title, text: S.message }); }
+        catch (e) { if (e && e.name !== 'AbortError') window.open(waUrl, '_blank', 'noopener'); }
+      } else {
+        window.open(waUrl, '_blank', 'noopener');
+      }
+    });
+    $('#shareCopy').addEventListener('click', copy);
+  })();
+
   /* ── map (loads only when near) ─────────────────────────────────────────── */
   const mapBox = $('#map');
   const loadMap = () => { if (mapBox.firstChild) return; mapBox.innerHTML = `<iframe title="Map to ${esc(W.venue.name)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=${encodeURIComponent(W.venue.mapQuery)}&z=15&output=embed"></iframe>`; };

@@ -431,3 +431,13 @@ a { color: inherit; }
 .music-tip.show { opacity: 1; transform: none; }
 @keyframes drumbeat { 0%, 100% { transform: rotate(0) scale(1); } 50% { transform: rotate(-4deg) scale(1.06); } }
 @keyframes eq { from { transform: scaleY(.5); } to { transform: scaleY(1.4); } }
+
+/* ── share the invitation ────────────────────────────────────────────────── */
+.share-sec { background: linear-gradient(180deg, var(--paper), var(--paper-2)); padding-top: clamp(7rem, 13vw, 9rem); }
+.share-card { max-width: 46rem; margin: 0 auto; text-align: center; }
+.share-poster { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 0 2px rgba(246, 207, 98, .6), 0 40px 80px -40px rgba(10, 0, 4, .95); }
+.share-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: .8rem; margin-top: 1.8rem; }
+.share-btns .btn { gap: .55rem; }
+.share-wa { border-color: #25d366; }
+.share-wa:hover { background: #25d366; border-color: #25d366; color: #0b2e18; }
+.share-note { min-height: 1.5em; margin-top: 1rem; color: var(--pasupu-lt); font-weight: 600; }
