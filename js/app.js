@@ -508,32 +508,12 @@
         ta.remove();
       }
     }
-    // on phones, share the HD poster itself as a photo with the message as its caption (crisp in chats);
-    // the file is fetched ahead of time so the share sheet opens straight from the tap
-    let posterFile = null;
-    const loadPoster = () => {
-      if (posterFile || !window.File || !navigator.canShare) return;
-      fetch('assets/poster-hd.jpg').then(r => r.ok ? r.blob() : null).then(b => {
-        if (!b) return;
-        const file = new File([b], 'Reena-Deekshith-Wedding-Invitation.jpg', { type: 'image/jpeg' });
-        if (navigator.canShare({ files: [file], text: S.message })) posterFile = file;
-      }).catch(() => {});
-    };
-    if ('IntersectionObserver' in window) {
-      const po = new IntersectionObserver(es => { if (es[0].isIntersecting) { po.disconnect(); loadPoster(); } }, { rootMargin: '600px' });
-      po.observe($('#share'));
-    } else loadPoster();
-
+    // share the message as text: WhatsApp sees the link in it and shows the preview card
+    // (poster on top, title, description, address) above the message
     $('#shareNow').addEventListener('click', async () => {
       if (!navigator.share) { window.open(waUrl, '_blank', 'noopener'); return; }
-      try {
-        if (posterFile) await navigator.share({ files: [posterFile], title: S.title, text: S.message });
-        else await navigator.share({ title: S.title, text: S.message });
-      } catch (e) {
-        if (e && e.name === 'AbortError') return;          // they closed the share sheet
-        try { await navigator.share({ title: S.title, text: S.message }); }   // some apps refuse files — send text + link
-        catch (e2) { if (e2 && e2.name !== 'AbortError') window.open(waUrl, '_blank', 'noopener'); }
-      }
+      try { await navigator.share({ text: S.message }); }
+      catch (e) { if (e && e.name !== 'AbortError') window.open(waUrl, '_blank', 'noopener'); }
     });
     $('#shareCopy').addEventListener('click', copy);
   })();
