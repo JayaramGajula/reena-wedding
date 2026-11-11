@@ -1,0 +1,10 @@
+# raw originals — not needed by the site
+card/
+BGM/
+# images no longer used by the page
+assets/emblem.png
+assets/mehendi.jpg
+assets/muhurtham.jpg
+# local tooling
+.vercel/
+node_modules/

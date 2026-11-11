@@ -1,0 +1,7 @@
+# raw originals — not needed on the live site
+card/
+BGM/
+# images no longer used by the page
+assets/emblem.png
+assets/mehendi.jpg
+assets/muhurtham.jpg
