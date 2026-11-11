@@ -178,7 +178,8 @@
     const audio = $('#bgm'), box = $('#music'), btn = $('#musicBtn'), tip = $('#musicTip');
     const KEY = 'bgm-off';
     let tipT = 0, fadeT = 0, wantOff = false;
-    try { wantOff = localStorage.getItem(KEY) === '1'; } catch (e) { /* storage unavailable */ }
+    // the off choice lasts only for this visit — every new visit starts with music on
+    try { wantOff = sessionStorage.getItem(KEY) === '1'; localStorage.removeItem(KEY); } catch (e) { /* storage unavailable */ }
     function say(text) { tip.textContent = text; tip.classList.add('show'); clearTimeout(tipT); tipT = setTimeout(() => tip.classList.remove('show'), 2200); }
     function show(playing) {
       box.classList.toggle('playing', playing);
@@ -204,7 +205,7 @@
     btn.addEventListener('click', () => {
       if (audio.paused || !box.classList.contains('playing')) { wantOff = false; play(true); }
       else { wantOff = true; pause(true); }
-      try { localStorage.setItem(KEY, wantOff ? '1' : '0'); } catch (e) { /* ignore */ }
+      try { sessionStorage.setItem(KEY, wantOff ? '1' : '0'); } catch (e) { /* ignore */ }
     });
     // pause while the tab is hidden, resume when back
     document.addEventListener('visibilitychange', () => {
@@ -213,15 +214,18 @@
     });
     // if the browser blocked the start (no tap yet), begin on the guest's first tap anywhere
     const firstTap = e => {
-      if (box.hidden || wantOff || box.classList.contains('playing') || e.target.closest('#musicBtn')) return;
+      if (box.hidden || wantOff || box.classList.contains('playing')) { if (box.classList.contains('playing') || wantOff) stopWaiting(); return; }
+      if (e.target.closest && e.target.closest('#musicBtn')) return;
       play(false);
     };
+    const EVENTS = ['pointerdown', 'touchend', 'keydown'];
+    const stopWaiting = () => EVENTS.forEach(ev => document.removeEventListener(ev, firstTap, true));
     return {
       start() {
         box.hidden = false;
         if (wantOff) { show(false); return; }
         play(false);
-        document.addEventListener('pointerdown', firstTap, { once: true, capture: true });
+        EVENTS.forEach(ev => document.addEventListener(ev, firstTap, true));   // keep trying until it plays
       }
     };
   })();
@@ -254,7 +258,7 @@
     $('#enter').addEventListener('click', e => { e.stopPropagation(); openGate(); });
     gate.addEventListener('click', openGate);
     addEventListener('keydown', e => { if (!opened && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openGate(); } });
-    setTimeout(openGate, 7000);
+    // no auto-open: the guest's tap on "Step inside" is what lets the music start
     $('#enter').focus({ preventScroll: true });
   }
 
@@ -504,12 +508,31 @@
         ta.remove();
       }
     }
+    // on phones, share the HD poster itself as a photo with the message as its caption (crisp in chats);
+    // the file is fetched ahead of time so the share sheet opens straight from the tap
+    let posterFile = null;
+    const loadPoster = () => {
+      if (posterFile || !window.File || !navigator.canShare) return;
+      fetch('assets/poster-hd.jpg').then(r => r.ok ? r.blob() : null).then(b => {
+        if (!b) return;
+        const file = new File([b], 'Reena-Deekshith-Wedding-Invitation.jpg', { type: 'image/jpeg' });
+        if (navigator.canShare({ files: [file], text: S.message })) posterFile = file;
+      }).catch(() => {});
+    };
+    if ('IntersectionObserver' in window) {
+      const po = new IntersectionObserver(es => { if (es[0].isIntersecting) { po.disconnect(); loadPoster(); } }, { rootMargin: '600px' });
+      po.observe($('#share'));
+    } else loadPoster();
+
     $('#shareNow').addEventListener('click', async () => {
-      if (navigator.share) {
-        try { await navigator.share({ title: S.title, text: S.message }); }
-        catch (e) { if (e && e.name !== 'AbortError') window.open(waUrl, '_blank', 'noopener'); }
-      } else {
-        window.open(waUrl, '_blank', 'noopener');
+      if (!navigator.share) { window.open(waUrl, '_blank', 'noopener'); return; }
+      try {
+        if (posterFile) await navigator.share({ files: [posterFile], title: S.title, text: S.message });
+        else await navigator.share({ title: S.title, text: S.message });
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;          // they closed the share sheet
+        try { await navigator.share({ title: S.title, text: S.message }); }   // some apps refuse files — send text + link
+        catch (e2) { if (e2 && e2.name !== 'AbortError') window.open(waUrl, '_blank', 'noopener'); }
       }
     });
     $('#shareCopy').addEventListener('click', copy);
